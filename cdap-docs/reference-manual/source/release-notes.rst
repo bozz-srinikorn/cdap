@@ -30,6 +30,156 @@ Cask Data Application Platform Release Notes
    :backlinks: none
    :depth: 2
 
+`Release 6.1.3 <http://docs.cask.co/cdap/6.1.3/index.html>`__
+=============================================================
+
+Summary
+-------
+
+This release introduces new features, performance improvements as well as bug fixes. Some of the highlights are:
+
+1. **Performance improvements**
+    - Improve the performance of joiner plugins to better handle data skewness with capped memory.
+    - Support a new aggregator API to achieve better performance for Spark engine.
+
+2. **Platform and pipeline enhancements**
+    - Support upgrading all pipelines in a namespace via REST API to use latest available artifacts.
+    - Upgrade to use Dataproc API v1beta2 to allow endpoint configuration.
+    - Add various bug fixes and enhancements for preview and pipeline execution.
+    - Allow user to select a Custom Dataproc Image by specifying image URI.
+
+New Features
+------------
+
+- :cask-issue:`CDAP-16708` - Added a new AutoJoiner API for plugins to implement. The new API leaves implementation details up to the application, which can perform join optimizations that were not possible with the older Joiner API.
+
+- :cask-issue:`CDAP-16709` - Implemented performance improvements to joiner plugins to cap the required memory to around 4gb per executor instead of scaling up as the skewness of the join goes up. Joins can now also be performed in-memory if one side is small, and behavior on null keys can be chosen by the user.
+
+- :cask-issue:`CDAP-16835` - Added support for upgrading applications via REST API. Example usage is to upgrade all pipelines in a namespace to use latest available artifacts.
+
+- :cask-issue:`CDAP-16855` - Introduced a new aggregator API to achieve better performance for Spark engine.
+
+- :cask-issue:`CDAP-16918` - Introduced a new REST API for getting all application details across all namespaces.
+
+Improvements
+------------
+
+- :cask-issue:`CDAP-16328` - Labeling Dataproc clusters configured as Remote Hadoop Provisioners.
+
+- :cask-issue:`CDAP-16461` - Added Spark parameter to limit Spark block size to prevent issues with joins.
+
+- :cask-issue:`CDAP-16530` - Fixed joiner output schema generation to be deterministic, using the same ordering as they had in the input data.
+
+- :cask-issue:`CDAP-16606` - Limit to reading in 100 records across all input partitions in preview.
+
+- :cask-issue:`CDAP-16621` - Removed modal showing pipeline JSON when users export pipelines. Instead, pipeline gets downloaded when users click "export pipeline" without the extra confirmation step.
+
+- :cask-issue:`CDAP-16656` - Added support for rendering large schemas (>1000 fields) in pipelines UI. By default collapse complex schemas and lazy-load fields in record types.
+
+- :cask-issue:`CDAP-16673` - Added payload compression support to messaging service.
+
+- :cask-issue:`CDAP-16676` - Upgrade to use Dataproc API v1beta2 to allow endpoint config.
+
+- :cask-issue:`CDAP-16708` - Added a new AutoJoiner API for plugins to implement. The new API leaves implementation details up to the application, which can perform join optimizations that were not possible with the older Joiner API.
+
+- :cask-issue:`CDAP-16711` - Added the ability for Joiner plugins to specify whether null keys should match other null keys.
+
+- :cask-issue:`CDAP-16815` - Added a metric records.updated in BigQuery sink. This will give a total of all the inserts, updates and upserts into the sink.
+
+- :cask-issue:`CDAP-16875` - Added two new properties to the Joiner plugin -- 'Join on Null Values' and 'Inputs to Load in Memory'. The plugin also uses new join capabilities that make it more resilient to running out of memory.
+
+- :cask-issue:`CDAP-16918` - Introduced a new REST API for getting all application details across all namespaces.
+
+- :cask-issue:`CDAP-16929` - Added the ability to select a Custom Dataproc Image. The complete URI for the custom image should be specified.
+
+Bug Fixes
+---------
+
+- :cask-issue:`CDAP-15775` - Fixed a bug that disallowed writing to an empty BigQuery table without any data or schema.
+
+- :cask-issue:`CDAP-16055` - Fixed a bug that the failure error message emitted by Spark driver is not being collected.
+
+- :cask-issue:`CDAP-16211` - Unified JSON structure used by REST endpoints for getting pipeline configuration and deploying pipelines.
+
+- :cask-issue:`CDAP-16222` - Fixed the package references in the dynamic Spark plugin to use io.cdap instead of co.cask.
+
+- :cask-issue:`CDAP-16240` - Fixed a bug to show master and worker memory in Dataproc compute profiles in GB.
+
+- :cask-issue:`CDAP-16315` - Disable showing systems logs by default when viewing logs for a pipeline.
+
+- :cask-issue:`CDAP-16367` - Fixed a bug where field lineage is incorrect when a source is directly connected to a sink.
+
+- :cask-issue:`CDAP-16453` - Fixed a bug with LimitingInputFormat that made DBSource plugin fail in preview mode.
+
+- :cask-issue:`CDAP-16465` - Fixed a bug where Wrangler database connections could show more tables than those in the configured database.
+
+- :cask-issue:`CDAP-16493` - Fixed a bug that caused long field names to overflow in Joiner plugin.
+
+- :cask-issue:`CDAP-16507` - Fixed the error message that the delimited format generates when the number of fields in the data does not match the number of fields in the schema.
+
+- :cask-issue:`CDAP-16521` - Improved program startup performance by using a thread pool to start program instead of starting from a single thread.
+
+- :cask-issue:`CDAP-16593` - Added restrictions on the maximum number of network tags for Dataproc VM to 64.
+
+- :cask-issue:`CDAP-16614` - Fixed the fetch run records API to honor the limit query parameter correctly.
+
+- :cask-issue:`CDAP-16633` - Added option to generate scoped GoogleCredentials with BQ and Drive scope for all BQ requests.
+
+- :cask-issue:`CDAP-16645` - Fix bug that resets preferences of an app/pipeline every 10 seconds.
+
+- :cask-issue:`CDAP-16655` - Fixed a bug in File Source to allow it to read files on GCS.
+
+- :cask-issue:`CDAP-16663` - Fixed a bug where UI incorrectly showed "No schema available" when the previous stages' output schema is a macro.
+
+- :cask-issue:`CDAP-16664` - Fixed a bug that resulted in failure to update/upsert to BQ in a different project.
+
+- :cask-issue:`CDAP-16724` - Fixed a bug in wrangler that would cause it to go out of memory when sampling a GCS object that has a lot of rows.
+
+- :cask-issue:`CDAP-16725` - Fixed a bug where concurrent preview runs were failing because SparkConf for the new preview runs was getting populated with the configurations from the previously started in-progress preview run.
+
+- :cask-issue:`CDAP-16731` - Fixed a bug that the groupBy aggregator requires a different alias for the field name.
+
+- :cask-issue:`CDAP-16736` - Fixed record schema comparison to include record name.
+
+- :cask-issue:`CDAP-16751` - Fixed a bug where UI overwrites scale property of a decimal schema field if 0.
+
+- :cask-issue:`CDAP-16760` - Fixed a bug where memory, CPU, and engine config properties were not being set for sparkprogram plugins.
+
+- :cask-issue:`CDAP-16788` - Remove reference to detailed view of an application. UI now only shows overview of custom applications and pipeline detailed view for pipelines when navigating from control center.
+
+- :cask-issue:`CDAP-16801` - Fixed an issue where runtime arguments would lose focus after typing certain properties.
+
+- :cask-issue:`CDAP-16809` - Added support for compressed file with header copying for text file based source.
+
+- :cask-issue:`CDAP-16816` - Fixed schedule properties to overwrite preferences set on the application instead of the other way around. This most visibly fixed a bug where the compute profile set on a pipeline schedule or trigger would get overwritten by the profile for the pipeline.
+
+- :cask-issue:`CDAP-16845` - Fixed a bug that started running preview for pipelines with post-run actions even if user chose option to not run preview.
+
+- :cask-issue:`CDAP-16870` - Fixed PySpark support to work with Spark 2.1.3+.
+
+- :cask-issue:`CDAP-16879` - 'Truncate table' and 'update schema' options if set together, will apply only WRITE_TRUNCATE to BQ job.
+
+- :cask-issue:`CDAP-16880` - Removed schema validation from BQ sink when 'truncate table' option is set.
+
+- :cask-issue:`CDAP-16891` - Unsupported pipelines in drafts would be upgraded when users open them.
+
+- :cask-issue:`CDAP-16940` - UI now waits for 5 mins for inactivity in the browser before stopping all the polling logic.This prevents stopping polling for resources that might take more than 30 seconds to respond (current timeout is 30 seconds).
+
+- :cask-issue:`CDAP-16950` - Includes all ERROR level logs logged under the application logging context.
+
+- :cask-issue:`CDAP-16959` - Fixed an issue with runtime arguments re-rendering and losing focus when containing macros in preview.
+
+- :cask-issue:`CDAP-16972` - Fixed an issue where preview config would open when trying to stop a preview.
+
+- :cask-issue:`CDAP-16975` - UI now adds the latest version of plugin, among the list of different versions of the plugin, when added from the sidepanel in pipeline studio. If the user has already chosen a specific version (older version) it defaults to that instead of the latest.
+
+- :cask-issue:`CDAP-16976` - UI resets the default version of plugins for specific user during upgrade. When users upgrade from 6.1.2 to 6.1.3 or later UI will reset the default version of plugin the user has already chosen. Post upgrade if the user uses the same plugin UI will choose the latest version of the same plugin.
+
+- :cask-issue:`CDAP-16993` - Fixed a bug in preview for fields that have non-string types such as bytes.
+
+- :cask-issue:`CDAP-17000` - Changed default value of spark.network.timeout to 10 minutes to make pipeline execution more stable for shuffle heavy pipelines.
+
+
 `Release 6.1.2 <http://docs.cask.co/cdap/6.1.2/index.html>`__
 =============================================================
 
