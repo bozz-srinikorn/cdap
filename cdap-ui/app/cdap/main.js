@@ -293,9 +293,6 @@ class CDAP extends Component {
               exact
               path="/schema"
               render={(props) => {
-                if (window.CDAP_CONFIG.cdap.mode !== 'development') {
-                  return <Page404 {...props} />;
-                }
                 const SchemaEditorDemo = Loadable({
                   loader: () =>
                     import(
