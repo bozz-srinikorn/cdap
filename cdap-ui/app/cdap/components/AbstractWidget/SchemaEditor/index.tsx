@@ -77,13 +77,8 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       tree: this.schema.getSchemaTree(),
     });
   }
-  public onChange = (
-    validate,
-    index: number,
-    fieldId: IFieldIdentifier,
-    onChangePayload: IOnChangePayload
-  ) => {
-    const { fieldIdToFocus, fieldIndex } = this.schema.onChange(index, fieldId, onChangePayload);
+  public onChange = (validate, fieldId: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
+    const { fieldIdToFocus } = this.schema.onChange(fieldId, onChangePayload);
     const newFlat = this.schema
       .getFlatSchema()
       .map((row) => row.id)
@@ -101,10 +96,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       avroSchema: this.schema.getAvroSchema(),
     });
     if (typeof validate === 'function' && onChangePayload.value !== '') {
-      validate(
-        fieldIndex ? this.schema.getFlatSchema()[fieldIndex] : fieldId,
-        this.schema.getSchemaTree()
-      );
+      validate(fieldId, this.schema.getSchemaTree());
     }
     return { fieldIdToFocus };
   };

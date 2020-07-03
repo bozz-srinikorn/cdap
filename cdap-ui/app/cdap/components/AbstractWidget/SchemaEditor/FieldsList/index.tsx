@@ -41,11 +41,7 @@ interface IFieldsListState {
 
 interface IFieldsListProps extends WithStyles<typeof styles> {
   value: IFlattenRowType[];
-  onChange: (
-    index: number,
-    id: IFieldIdentifier,
-    onChangePayload: IOnChangePayload
-  ) => IOnChangeReturnType;
+  onChange: (id: IFieldIdentifier, onChangePayload: IOnChangePayload) => IOnChangeReturnType;
 }
 
 class FieldsListBase extends React.Component<IFieldsListProps, IFieldsListState> {
@@ -67,8 +63,8 @@ class FieldsListBase extends React.Component<IFieldsListProps, IFieldsListState>
     }
   }
 
-  public onChange = (index: number, field: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
-    const { fieldIdToFocus } = this.props.onChange(index, field, onChangePayload);
+  public onChange = (field: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
+    const { fieldIdToFocus } = this.props.onChange(field, onChangePayload);
     if (typeof fieldIdToFocus === 'string') {
       this.setState({
         currentRowToFocus: fieldIdToFocus,
@@ -92,7 +88,7 @@ class FieldsListBase extends React.Component<IFieldsListProps, IFieldsListState>
             autoFocus={currentRowToFocus === field.id}
             key={field.id}
             field={field}
-            onChange={this.onChange.bind(null, startNode + i + 1)}
+            onChange={this.onChange}
           />
         );
       });

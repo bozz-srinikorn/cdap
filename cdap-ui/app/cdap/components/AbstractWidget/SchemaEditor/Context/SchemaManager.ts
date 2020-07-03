@@ -33,6 +33,7 @@ import {
   getInternalType,
   initTypeProperties,
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManagerUtilities';
+import { isNilOrEmpty } from 'services/helpers';
 
 interface ISchemaManagerOptions {
   collapseAll: boolean;
@@ -45,11 +46,7 @@ interface ISchemaManager {
   getSchemaTree: () => INode;
   getFlatSchema: () => IFlattenRowType[];
   getAvroSchema: () => ISchemaType;
-  onChange: (
-    currentIndex: number,
-    fieldId: IFieldIdentifier,
-    onChangePayload: IOnChangePayload
-  ) => IOnChangeReturnType;
+  onChange: (fieldId: IFieldIdentifier, onChangePayload: IOnChangePayload) => IOnChangeReturnType;
 }
 
 interface IOnChangeReturnType {
@@ -239,7 +236,8 @@ class SchemaManagerBase implements ISchemaManager {
    *
    * @param currentIndex - Current index in the flattend array to add a new row.
    */
-  private add = (currentIndex): IOnChangeReturnType => {
+  private add = (fieldId: IFieldIdentifier): IOnChangeReturnType => {
+    const currentIndex = this.flatTree.findIndex((f) => f.id === fieldId.id);
     const matchingEntry = this.flatTree[currentIndex];
     let result: { tree: INode; newTree: INode; currentField: INode };
     let newFlatSubTree: IFlattenRowType[];
@@ -312,7 +310,8 @@ class SchemaManagerBase implements ISchemaManager {
    * the user to be able to keep the record type.
    * @param currentIndex - Index of the current row to be removed.
    */
-  private remove = (currentIndex: number): IOnChangeReturnType => {
+  private remove = (fieldId: IFieldIdentifier): IOnChangeReturnType => {
+    const currentIndex = this.flatTree.findIndex((f) => f.id === fieldId.id);
     const matchingEntry = this.flatTree[currentIndex];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     const { tree, removedField, newlyAddedField } = this.removeFromTree(this.schemaTree, idObj);
@@ -393,11 +392,12 @@ class SchemaManagerBase implements ISchemaManager {
    * @param onChangePayload - { property, value } - payload for updating.
    */
   private update = (
-    currentIndex: number,
+    fieldId: IFieldIdentifier,
     { property, value }: Partial<IOnChangePayload>
   ): IOnChangeReturnType => {
-    this.flatTree[currentIndex][property] = value;
-    const matchingEntry = this.flatTree[currentIndex];
+    const index = this.flatTree.findIndex((f) => f.id === fieldId.id);
+    this.flatTree[index][property] = value;
+    const matchingEntry = this.flatTree[index];
     let result: { tree: INode; childrenCount: number; newTree: INode };
     let newFlatSubTree: IFlattenRowType[];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
@@ -406,21 +406,21 @@ class SchemaManagerBase implements ISchemaManager {
     // If user changed a complex type to a simple type or to another comples type we need
     // to remove the complex type children first
     this.flatTree = [
-      ...this.flatTree.slice(0, currentIndex),
-      ...this.flatTree.slice(currentIndex + result.childrenCount + (!result.newTree ? 0 : 1)),
+      ...this.flatTree.slice(0, index),
+      ...this.flatTree.slice(index + result.childrenCount + (!result.newTree ? 0 : 1)),
     ];
     // And then add the newly updated complex type children to the flattened array.
     if (result.newTree) {
       newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
       this.flatTree = [
-        ...this.flatTree.slice(0, currentIndex),
+        ...this.flatTree.slice(0, index),
         ...newFlatSubTree,
-        ...this.flatTree.slice(currentIndex),
+        ...this.flatTree.slice(index),
       ];
     }
     // newFlatSubTree will be of length 1 for simple type changes.
     if (Array.isArray(newFlatSubTree) && newFlatSubTree.length > 1) {
-      return { fieldIdToFocus: this.flatTree[currentIndex + 1].id, fieldIndex: currentIndex + 1 };
+      return { fieldIdToFocus: this.flatTree[index + 1].id, fieldIndex: index + 1 };
     }
     return {};
   };
@@ -500,20 +500,19 @@ class SchemaManagerBase implements ISchemaManager {
    * 'name' or 'typeProperties'
    */
   public onChange = (
-    currentIndex: number,
     fieldId: IFieldIdentifier,
     { type, property, value }: IOnChangePayload
   ): IOnChangeReturnType => {
-    if (isNil(currentIndex) || currentIndex === -1) {
+    if (isNilOrEmpty(fieldId)) {
       return;
     }
     switch (type) {
       case 'update':
-        return this.update(currentIndex, { property, value });
+        return this.update(fieldId, { property, value });
       case 'add':
-        return this.add(currentIndex);
+        return this.add(fieldId);
       case 'remove':
-        return this.remove(currentIndex);
+        return this.remove(fieldId);
       case 'collapse':
         return this.collapse(fieldId);
     }
