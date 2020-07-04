@@ -20,7 +20,6 @@ import {
   IOnChangePayload,
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import uuidV4 from 'uuid/v4';
-import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
 import { INode, parseSchema } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { FlatSchema } from 'components/AbstractWidget/SchemaEditor/Context/FlatSchema';
@@ -247,7 +246,11 @@ class SchemaManagerBase implements ISchemaManager {
     // The new tree is for flattening and inserting it into the flattened array
     // The current field is then passed on to the schema editor for presentation (focus on that specific row)
     result = this.addToTree(this.schemaTree, idObj);
-    newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
+    const customOptions = {
+      ...this.options,
+      collapseAll: false,
+    };
+    newFlatSubTree = FlatSchema(result.newTree, customOptions, matchingEntry.ancestors);
     this.schemaTree = result.tree;
     const currentFieldBranchCount = branchCount(result.currentField);
     this.flatTree = [
@@ -323,7 +326,11 @@ class SchemaManagerBase implements ISchemaManager {
     let newFlatSubTree = [];
     // Newly added row in case we need to maintain the structure of say, a record or an enum.
     if (newlyAddedField) {
-      newFlatSubTree = FlatSchema(newlyAddedField, this.options, matchingEntry.ancestors);
+      const customOptions = {
+        ...this.options,
+        collapseAll: false,
+      };
+      newFlatSubTree = FlatSchema(newlyAddedField, customOptions, matchingEntry.ancestors);
     }
     this.flatTree = [
       ...this.flatTree.slice(0, currentIndex),
@@ -409,9 +416,13 @@ class SchemaManagerBase implements ISchemaManager {
       ...this.flatTree.slice(0, index),
       ...this.flatTree.slice(index + result.childrenCount + (!result.newTree ? 0 : 1)),
     ];
+    const customOptions = {
+      ...this.options,
+      collapseAll: false,
+    };
     // And then add the newly updated complex type children to the flattened array.
     if (result.newTree) {
-      newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
+      newFlatSubTree = FlatSchema(result.newTree, customOptions, matchingEntry.ancestors);
       this.flatTree = [
         ...this.flatTree.slice(0, index),
         ...newFlatSubTree,
@@ -459,8 +470,19 @@ class SchemaManagerBase implements ISchemaManager {
     this.flatTree[matchingIndex].collapsed = !this.flatTree[matchingIndex].collapsed;
     const nodeDepth = this.calculateNodeDepthMap(fieldObj);
     for (let i = 1; i <= nodeDepth; i++) {
-      if (typeof this.flatTree[matchingIndex + i].collapsed === 'boolean') {
-        this.flatTree[matchingIndex + i].collapsed = this.flatTree[matchingIndex].collapsed;
+      const currentRow = this.flatTree[matchingIndex + i];
+      const { collapsed } = currentRow;
+      if (typeof collapsed === 'boolean') {
+        if (collapsed === true) {
+          const childTreeDepth = this.calculateNodeDepthMap(
+            this.getFieldObjFromTree(currentRow, this.getSchemaTree())
+          );
+          this.flatTree[matchingIndex + i].hidden = this.flatTree[matchingIndex].collapsed;
+          i += childTreeDepth;
+          continue;
+        } else {
+          this.flatTree[matchingIndex + i].collapsed = this.flatTree[matchingIndex].collapsed;
+        }
       }
       this.flatTree[matchingIndex + i].hidden = this.flatTree[matchingIndex].collapsed;
     }
@@ -524,7 +546,7 @@ class SchemaManagerBase implements ISchemaManager {
  * Will expand to restricting schema types.
  */
 const defaultOptions: ISchemaManagerOptions = {
-  collapseAll: false,
+  collapseAll: true,
 };
 
 function SchemaManager(avroSchema, options: ISchemaManagerOptions = defaultOptions) {

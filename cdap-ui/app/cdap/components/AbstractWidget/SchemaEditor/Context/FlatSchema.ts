@@ -18,7 +18,6 @@ import isObject from 'lodash/isObject';
 import { INode } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { IFlattenRowType } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { ISchemaManagerOptions } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManager';
-import { isNilOrEmpty } from 'services/helpers';
 
 /**
  * DFS traversal of the schema tree to flatten.
@@ -72,22 +71,6 @@ function FlatSchemaBase(
  * @param ancestors Ancestors of the current tree. The main schema tree will have no ancestors.
  */
 function FlatSchema(schemaTree: INode, options: ISchemaManagerOptions, ancestors = []) {
-  const size = JSON.stringify(schemaTree).length;
-  const customOptions = {
-    ...options,
-  };
-  // TODO: Improve the logic to determine a big schema. Even if the option says to expand/collapse all
-  // if the schema is big enough we just collapse them to prevent any performance pitfalls.
-  if (size > 100000) {
-    if (
-      !isNilOrEmpty(options) ||
-      !(isObject(options) && typeof options.collapseAll === 'boolean')
-    ) {
-      customOptions.collapseAll = true;
-    }
-  } else {
-    customOptions.collapseAll = false;
-  }
-  return FlatSchemaBase(schemaTree, customOptions, ancestors);
+  return FlatSchemaBase(schemaTree, options, ancestors);
 }
 export { FlatSchema };
