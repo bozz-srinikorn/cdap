@@ -64,25 +64,6 @@ const styles = (theme): StyleRules => {
     checkbox: {
       color: theme.palette.white[50],
     },
-    error: {
-      position: 'absolute',
-      backgroundColor: theme.palette.red[100],
-      color: theme.palette.white[50],
-      top: 0,
-      left: 0,
-      right: 0,
-      display: 'grid',
-      gridTemplateColumns: '1fr 75px',
-      minHeight: '100%',
-      alignItems: 'center',
-    },
-    closeButtonContainer: {
-      textAlign: 'center',
-    },
-    errorMessageContainer: {
-      paddingLeft: '10px',
-      paddingRight: '10px',
-    },
   };
 };
 
@@ -91,8 +72,6 @@ interface ITopPanelProps extends WithStyles<typeof styles> {
   isPolling: boolean;
   getLatestLogs: () => void;
   setSystemLogs: (includeSystemLogs: boolean) => void;
-  error?: string;
-  dismissError: () => void;
 }
 
 const TopPanelView: React.FC<ITopPanelProps> = ({
@@ -101,8 +80,6 @@ const TopPanelView: React.FC<ITopPanelProps> = ({
   isPolling,
   getLatestLogs,
   setSystemLogs,
-  error,
-  dismissError,
 }) => {
   const [includeSystemLogs, setLocalIncludeSystemLogs] = React.useState(
     dataFetcher.getIncludeSystemLogs()
@@ -172,19 +149,6 @@ const TopPanelView: React.FC<ITopPanelProps> = ({
       >
         Download All
       </Button>
-
-      <If condition={!!error}>
-        <div className={classes.error}>
-          <div className={classes.errorMessageContainer}>
-            <span>{error}</span>
-          </div>
-          <div className={classes.closeButtonContainer}>
-            <IconButton onClick={dismissError}>
-              <Close />
-            </IconButton>
-          </div>
-        </div>
-      </If>
     </div>
   );
 };

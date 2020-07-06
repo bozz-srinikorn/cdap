@@ -23,6 +23,7 @@ import debounce from 'lodash/debounce';
 import TopPanel, { TOP_PANEL_HEIGHT } from 'components/LogViewer/TopPanel';
 import LogLevel from 'components/LogViewer/LogLevel';
 import { extractErrorMessage } from 'services/helpers';
+import Alert from 'components/Alert';
 
 export function logsTableGridStyle(theme): StyleRules {
   return {
@@ -382,8 +383,6 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
           isPolling={this.state.isPolling}
           getLatestLogs={this.getLatestLogs}
           setSystemLogs={this.setIncludeSystemLogs}
-          error={this.state.error}
-          dismissError={this.dismissError}
         />
         <div className={classes.logsTableHeader}>
           <div className={classes.cell}>Time</div>
@@ -399,6 +398,13 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
           })}
           <div ref={this.bottomIndicator} className={classes.indicator} id="bottom" />
         </div>
+
+        <Alert
+          showAlert={!!this.state.error}
+          message={this.state.error}
+          onClose={this.dismissError}
+          type="error"
+        />
       </div>
     );
   }
