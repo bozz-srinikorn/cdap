@@ -21,9 +21,6 @@ import Button from '@material-ui/core/Button';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import classnames from 'classnames';
-import If from 'components/If';
-import IconButton from '@material-ui/core/IconButton';
-import Close from '@material-ui/icons/Close';
 
 export const TOP_PANEL_HEIGHT = '50px';
 
