@@ -259,6 +259,7 @@ export default class SetPreferenceModal extends Component {
     event.preventDefault();
     this.setState({
       showResetMessage: true,
+      error: undefined,
     });
     this.getSpecifiedPreferences();
     setTimeout(() => {
