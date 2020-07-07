@@ -185,6 +185,7 @@ export default class SetPreferenceModal extends Component {
         },
         (error) => {
           this.setState({
+            saving: false,
             error: isObject(error) ? error.response : error,
           });
         }
