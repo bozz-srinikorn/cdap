@@ -450,6 +450,7 @@ export default class SetPreferenceModal extends Component {
                     className="btn btn-primary float-left not-saving"
                     onClick={this.setPreferences}
                     disabled={this.oneFieldMissing()}
+                    data-cy="save-prefs-btn"
                   >
                     <span>{saveAndCloseLabel}</span>
                   </button>
