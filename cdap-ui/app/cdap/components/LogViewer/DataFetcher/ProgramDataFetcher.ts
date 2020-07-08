@@ -20,6 +20,7 @@ import { MyProgramApi } from 'api/program';
 import { Observable } from 'rxjs/Observable';
 
 const PROGRAM_LOGS_FILTER = 'AND .origin=plugin OR .origin=program';
+const MAX_LOGS_PER_FETCH = 50;
 
 class ProgramDataFetcher implements DataFetcher {
   private namespace;
@@ -62,7 +63,7 @@ class ProgramDataFetcher implements DataFetcher {
       programType: this.programType,
       programId: this.programName,
       runId: this.runId,
-      max: 50,
+      max: MAX_LOGS_PER_FETCH,
       format: 'json',
       filter: this.getFilter(),
     };
