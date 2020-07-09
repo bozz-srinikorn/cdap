@@ -30,9 +30,6 @@ import { distinctUntilChanged, flatMap, mergeMap } from 'rxjs/operators';
 import { map } from 'rxjs/operators/map';
 import { getCurrentNamespace } from 'services/NamespaceStore';
 
-const COMMON_DELIMITER = ',';
-const COMMON_KV_DELIMITER = ';';
-
 interface ISecureKeyState {
   createdEpochMs?: number;
   description: string;
