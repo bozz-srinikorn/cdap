@@ -22,27 +22,24 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { MySecureKeyApi } from 'api/securekey';
 import If from 'components/If';
 import { SecureKeyStatus } from 'components/SecureKeys';
-import { List } from 'immutable';
 import React from 'react';
 import { getCurrentNamespace } from 'services/NamespaceStore';
 
 interface ISecureKeyDeleteProps {
+  state: any;
+  dispatch: React.Dispatch<any>;
   open: boolean;
   handleClose: () => void;
-  secureKeys: List<any>;
-  activeKeyIndex: number;
-  setActiveKeyIndex: (index: number) => void;
-  setSecureKeyStatus: (status: SecureKeyStatus) => void;
 }
 
 const SecureKeyDelete: React.FC<ISecureKeyDeleteProps> = ({
+  state,
+  dispatch,
   open,
-  secureKeys,
   handleClose,
-  activeKeyIndex,
-  setActiveKeyIndex,
-  setSecureKeyStatus,
 }) => {
+  const { secureKeys, activeKeyIndex } = state;
+
   const deleteSecureKey = () => {
     const key = secureKeys.get(activeKeyIndex).get('name');
 
@@ -54,8 +51,8 @@ const SecureKeyDelete: React.FC<ISecureKeyDeleteProps> = ({
 
     MySecureKeyApi.delete(params).subscribe(() => {
       handleClose();
-      setActiveKeyIndex(null);
-      setSecureKeyStatus(SecureKeyStatus.Success);
+      dispatch({ type: 'SET_ACTIVE_KEY_INDEX', activeKeyIndex: null });
+      dispatch({ type: 'SET_SECURE_KEY_STATUS', secureKeyStatus: SecureKeyStatus.Success });
     });
   };
 

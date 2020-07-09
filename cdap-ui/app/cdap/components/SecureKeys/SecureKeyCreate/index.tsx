@@ -26,7 +26,7 @@ import classnames from 'classnames';
 import WidgetWrapper from 'components/ConfigurationGroup/WidgetWrapper';
 import { COMMON_DELIMITER, COMMON_KV_DELIMITER } from 'components/PluginJSONCreator/constants';
 import { SecureKeyStatus } from 'components/SecureKeys';
-import { List, Map } from 'immutable';
+import { Map } from 'immutable';
 import React from 'react';
 import { getCurrentNamespace } from 'services/NamespaceStore';
 
@@ -45,19 +45,21 @@ const styles = (theme): StyleRules => {
 };
 
 interface ISecureKeyCreateProps extends WithStyles<typeof styles> {
-  secureKeys: List<any>;
-  setSecureKeyStatus: (status: SecureKeyStatus) => void;
+  state: any;
+  dispatch: React.Dispatch<any>;
   open: boolean;
   handleClose: () => void;
 }
 
 const SecureKeyCreateView: React.FC<ISecureKeyCreateProps> = ({
   classes,
-  setSecureKeyStatus,
-  secureKeys,
+  state,
+  dispatch,
   open,
   handleClose,
 }) => {
+  const { secureKeys } = state;
+
   const [localName, setLocalName] = React.useState('');
   const [localDescription, setLocalDescription] = React.useState('');
   const [localData, setLocalData] = React.useState('');
@@ -95,7 +97,7 @@ const SecureKeyCreateView: React.FC<ISecureKeyCreateProps> = ({
     // Duplicate key name should raise an error
     const keyIDs = secureKeys.map((key) => key.get('name'));
     if (keyIDs.includes(localName)) {
-      setSecureKeyStatus(SecureKeyStatus.Failure);
+      dispatch({ type: 'SET_SECURE_KEY_STATUS', secureKeyStatus: SecureKeyStatus.Failure });
       return;
     }
 
@@ -121,7 +123,7 @@ const SecureKeyCreateView: React.FC<ISecureKeyCreateProps> = ({
       setLocalDescription('');
       setLocalData('');
       setLocalPropertiesInString('');
-      setSecureKeyStatus(SecureKeyStatus.Success);
+      dispatch({ type: 'SET_SECURE_KEY_STATUS', secureKeyStatus: SecureKeyStatus.Success });
       handleClose();
     });
   };

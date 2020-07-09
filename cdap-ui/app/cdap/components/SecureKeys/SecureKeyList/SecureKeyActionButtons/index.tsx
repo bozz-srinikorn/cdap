@@ -14,6 +14,7 @@
  * the License.
  */
 
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -33,18 +34,18 @@ const styles = (theme): StyleRules => {
 };
 
 interface ISecureKeyActionButtonsProps extends WithStyles<typeof styles> {
+  state: any;
+  dispatch: React.Dispatch<any>;
   keyIndex: number;
-  setActiveKeyIndex: (index: number) => void;
-  setEditMode: (mode: boolean) => void;
-  setDeleteMode: (mode: boolean) => void;
+  keyID: string;
 }
 
 const SecureKeyActionButtonsView: React.FC<ISecureKeyActionButtonsProps> = ({
   classes,
+  state,
+  dispatch,
   keyIndex,
-  setActiveKeyIndex,
-  setEditMode,
-  setDeleteMode,
+  keyID,
 }) => {
   // Anchor element that appears when menu is clicked
   const [menuEl, setMenuEl] = React.useState(null);
@@ -54,22 +55,15 @@ const SecureKeyActionButtonsView: React.FC<ISecureKeyActionButtonsProps> = ({
     setMenuEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setMenuEl(null);
-  };
-
-  const onDetailsClick = (event, index) => {
+  const handleMenuClose = (event) => {
     preventPropagation(event);
-    setActiveKeyIndex(index);
-    setEditMode(true);
     setMenuEl(null);
   };
 
   const onDeleteClick = (event, index) => {
-    preventPropagation(event);
-    setActiveKeyIndex(index);
-    setDeleteMode(true);
-    setMenuEl(null);
+    dispatch({ type: 'SET_ACTIVE_KEY_INDEX', activeKeyIndex: index });
+    dispatch({ type: 'SET_DELETE_MODE', deleteMode: true });
+    handleMenuClose(event);
   };
 
   return (
@@ -78,10 +72,11 @@ const SecureKeyActionButtonsView: React.FC<ISecureKeyActionButtonsProps> = ({
         <IconButton onClick={handleMenuClick}>
           <MoreVertIcon />
         </IconButton>
-        <Menu anchorEl={menuEl} keepMounted open={Boolean(menuEl)} onClose={handleMenuClose}>
-          <MenuItem onClick={(e) => onDetailsClick(e, keyIndex)}>Details</MenuItem>
-          <MenuItem onClick={(e) => onDeleteClick(e, keyIndex)}>Delete</MenuItem>
-        </Menu>
+        <ClickAwayListener onClickAway={handleMenuClose}>
+          <Menu anchorEl={menuEl} open={Boolean(menuEl)} onClose={handleMenuClose}>
+            <MenuItem onClick={(e) => onDeleteClick(e, keyIndex)}>Delete</MenuItem>
+          </Menu>
+        </ClickAwayListener>
       </div>
     </div>
   );

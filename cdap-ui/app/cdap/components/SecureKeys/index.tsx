@@ -18,6 +18,7 @@ import withStyles, { StyleRules, WithStyles } from '@material-ui/core/styles/wit
 import { MySecureKeyApi } from 'api/securekey';
 import Alert from 'components/Alert';
 import If from 'components/If';
+import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import SecureKeyDelete from 'components/SecureKeys/SecureKeyDelete';
 import SecureKeyEdit from 'components/SecureKeys/SecureKeyEdit';
 import SecureKeyList from 'components/SecureKeys/SecureKeyList';
@@ -25,7 +26,7 @@ import { fromJS, List } from 'immutable';
 import * as React from 'react';
 import { BehaviorSubject } from 'rxjs';
 import { forkJoin } from 'rxjs/observable/forkJoin';
-import { flatMap, mergeMap } from 'rxjs/operators';
+import { distinctUntilChanged, flatMap, mergeMap } from 'rxjs/operators';
 import { map } from 'rxjs/operators/map';
 import { getCurrentNamespace } from 'services/NamespaceStore';
 
@@ -40,15 +41,38 @@ interface ISecureKeyState {
   data: string;
 }
 
-export enum SecureKeysPageMode {
-  List = 'LIST',
-  Details = 'DETAILS',
-}
-
 export enum SecureKeyStatus {
   Normal = 'Normal',
   Success = 'SUCCESS',
   Failure = 'FAILURE',
+}
+
+export const initialState = {
+  secureKeys: List([]),
+  secureKeyStatus: SecureKeyStatus.Normal,
+  editMode: false,
+  deleteMode: false,
+  activeKeyIndex: null,
+  loading: true,
+};
+
+export function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_SECURE_KEYS':
+      return { ...state, secureKeys: action.secureKeys };
+    case 'SET_SECURE_KEY_STATUS':
+      return { ...state, secureKeyStatus: action.secureKeyStatus };
+    case 'SET_EDIT_MODE':
+      return { ...state, editMode: action.editMode };
+    case 'SET_DELETE_MODE':
+      return { ...state, deleteMode: action.deleteMode };
+    case 'SET_ACTIVE_KEY_INDEX':
+      return { ...state, activeKeyIndex: action.activeKeyIndex };
+    case 'SET_LOADING':
+      return { ...state, loading: action.loading };
+    default:
+      return state;
+  }
 }
 
 const styles = (): StyleRules => {
@@ -56,38 +80,24 @@ const styles = (): StyleRules => {
     content: {
       padding: '50px',
     },
+    loadingBox: {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   };
 };
 
 interface ISecureKeysProps extends WithStyles<typeof styles> {}
 
 const SecureKeysView: React.FC<ISecureKeysProps> = ({ classes }) => {
-  const [secureKeys, setSecureKeys] = React.useState(List([]));
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
-  const [loading, setLoading] = React.useState(true);
-  const [secureKeyStatus, setSecureKeyStatus] = React.useState(SecureKeyStatus.Normal);
-  const [editMode, setEditMode] = React.useState(false);
-  const [deleteMode, setDeleteMode] = React.useState(false);
-  const [activeKeyIndex, setActiveKeyIndex] = React.useState(null);
+  const { secureKeyStatus, editMode, deleteMode, loading } = state;
 
-  const fetchSecureKeys = () => {
-    const namespace = getCurrentNamespace();
-
-    return MySecureKeyApi.list({ namespace }).pipe(
-      mergeMap((keys: ISecureKeyState[]) => {
-        return forkJoin(
-          keys.map((k) =>
-            MySecureKeyApi.getSecureData({ namespace, key: k.name }).pipe(
-              map((data: string) => {
-                k.data = data;
-                return k;
-              })
-            )
-          )
-        );
-      })
-    );
-  };
+  const namespace = getCurrentNamespace();
 
   // Observe `secureKeyStatus` with `useEffect` and forward the value to `secureKeyStatus$`
   const secureKeyStatusSubject = React.useRef(new BehaviorSubject(secureKeyStatus));
@@ -98,25 +108,42 @@ const SecureKeysView: React.FC<ISecureKeysProps> = ({ classes }) => {
     secureKeyStatusSubject,
   ]);
 
-  // When a user filters secure keys or create/edit/delete secure keys,
-  // fetch new secure keys
-  const searchResults$ = secureKeyStatus$.pipe(
-    flatMap((status: SecureKeyStatus) => {
-      return fetchSecureKeys().pipe(
-        map((keys: any[]) => {
-          return keys;
-        })
-      );
-    })
-  );
-
   // Update the states with incoming secure keys
   React.useEffect(() => {
-    const subscription = searchResults$.subscribe((keys: ISecureKeyState[]) => {
-      setLoading(true);
+    // Whenever user adds/edits/deletes a secure key, securekeyStatus$ emits a new value.
+    // In such case, re-call MySecureKeyApi.list to reflect the changes
+    const secureKeys$ = secureKeyStatus$
+      .pipe(
+        distinctUntilChanged(),
+        flatMap((status) => {
+          return MySecureKeyApi.list({ namespace }).pipe(
+            mergeMap((keys: ISecureKeyState[]) => {
+              return forkJoin(
+                keys.map((k) =>
+                  MySecureKeyApi.getSecureData({ namespace, key: k.name }).pipe(
+                    map((data: string) => {
+                      k.data = data;
+                      return k;
+                    })
+                  )
+                )
+              );
+            })
+          );
+        })
+      )
+      .publishReplay(1)
+      .refCount();
+
+    const subscription = secureKeys$.subscribe((keys: ISecureKeyState[]) => {
+      dispatch({ type: 'SET_LOADING', loading: true });
+      if (!keys) {
+        return;
+      }
+
       // Populate the table with matched secure keys
-      setSecureKeys(fromJS(keys));
-      setLoading(false);
+      dispatch({ type: 'SET_SECURE_KEYS', secureKeys: fromJS(keys) });
+      dispatch({ type: 'SET_LOADING', loading: false });
     });
 
     return () => {
@@ -127,12 +154,12 @@ const SecureKeysView: React.FC<ISecureKeysProps> = ({ classes }) => {
   // Success Alert component always closes after 3000ms.
   // After a timeout for 3000ms, reset status to make a success Alert component disappear
   const onSuccessAlertClose = () => {
-    setSecureKeyStatus(SecureKeyStatus.Normal);
+    dispatch({ type: 'SET_SECURE_KEY_STATUS', secureKeyStatus: SecureKeyStatus.Normal });
   };
 
   // A failure Alert component status should close only when user manually closes it
   const onFailureAlertClose = () => {
-    setSecureKeyStatus(SecureKeyStatus.Normal);
+    dispatch({ type: 'SET_SECURE_KEY_STATUS', secureKeyStatus: SecureKeyStatus.Normal });
   };
 
   return (
@@ -151,32 +178,30 @@ const SecureKeysView: React.FC<ISecureKeysProps> = ({ classes }) => {
       />
 
       <div className={classes.content}>
-        <SecureKeyList
-          secureKeys={secureKeys}
-          setSecureKeyStatus={setSecureKeyStatus}
-          setActiveKeyIndex={setActiveKeyIndex}
-          setEditMode={setEditMode}
-          setDeleteMode={setDeleteMode}
-          loading={loading}
-        />
+        <If condition={loading}>
+          <div className={classes.loadingBox}>
+            <LoadingSVGCentered />
+          </div>
+        </If>
+        <If condition={!loading}>
+          <SecureKeyList state={state} dispatch={dispatch} />
+        </If>
       </div>
 
       <If condition={editMode}>
         <SecureKeyEdit
+          state={state}
+          dispatch={dispatch}
           open={editMode}
-          handleClose={() => setEditMode(false)}
-          keyMetadata={secureKeys.get(activeKeyIndex)}
-          setSecureKeyStatus={setSecureKeyStatus}
+          handleClose={() => dispatch({ type: 'SET_EDIT_MODE', editMode: false })}
         />
       </If>
       <If condition={deleteMode}>
         <SecureKeyDelete
+          state={state}
+          dispatch={dispatch}
           open={deleteMode}
-          handleClose={() => setDeleteMode(false)}
-          secureKeys={secureKeys}
-          activeKeyIndex={activeKeyIndex}
-          setActiveKeyIndex={setActiveKeyIndex}
-          setSecureKeyStatus={setSecureKeyStatus}
+          handleClose={() => dispatch({ type: 'SET_DELETE_MODE', deleteMode: false })}
         />
       </If>
     </div>
