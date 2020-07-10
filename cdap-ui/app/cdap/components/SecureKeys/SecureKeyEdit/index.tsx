@@ -22,7 +22,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import withStyles, { StyleRules, WithStyles } from '@material-ui/core/styles/withStyles';
 import TextField from '@material-ui/core/TextField';
 import { MySecureKeyApi } from 'api/securekey';
-import classnames from 'classnames';
 import WidgetWrapper from 'components/ConfigurationGroup/WidgetWrapper';
 import { SecureKeyStatus } from 'components/SecureKeys';
 import { COMMON_DELIMITER, COMMON_KV_DELIMITER } from 'components/SecureKeys/constants';
@@ -33,14 +32,8 @@ import { getCurrentNamespace } from 'services/NamespaceStore';
 
 const styles = (theme): StyleRules => {
   return {
-    margin: {
+    secureKeyInput: {
       margin: `${theme.Spacing(3)}px ${theme.spacing(1)}px`,
-    },
-    textField: {
-      width: '45ch',
-    },
-    keyvalueField: {
-      width: '60ch',
     },
   };
 };
@@ -66,12 +59,11 @@ const SecureKeyEditView: React.FC<ISecureKeyEditProps> = ({
   const [localDescription, setLocalDescription] = React.useState(
     keyMetadata ? keyMetadata.get('description') : ''
   );
-  const [localData, setLocalData] = React.useState(keyMetadata ? keyMetadata.get('data') : '');
+  const [localData, setLocalData] = React.useState('');
   // since 'properties' are in key-value form, keep a separate state in string form
   const properties = keyMetadata ? keyMetadata.get('properties') : '';
   const [localPropertiesInString, setLocalPropertiesInString] = React.useState('');
 
-  const [showData, setShowData] = React.useState(false);
   const [valueIsChanged, setValueIsChanged] = React.useState(false);
 
   React.useEffect(() => {
@@ -110,10 +102,6 @@ const SecureKeyEditView: React.FC<ISecureKeyEditProps> = ({
     return keyvaluePairs;
   };
 
-  const saveSecureKey = () => {
-    editSecureKey();
-  };
-
   const editSecureKey = () => {
     const namespace = getCurrentNamespace();
 
@@ -124,8 +112,8 @@ const SecureKeyEditView: React.FC<ISecureKeyEditProps> = ({
 
     const requestBody = {
       description: localDescription,
-      data: localData,
       properties: convertLocalPropertiesInString(localPropertiesInString),
+      data: localData,
     };
 
     MySecureKeyApi.put(params, requestBody).subscribe(() => {
@@ -141,30 +129,32 @@ const SecureKeyEditView: React.FC<ISecureKeyEditProps> = ({
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Edit {keyID}</DialogTitle>
       <DialogContent>
-        <div className={classnames(classes.margin, classes.textField)}>
+        <div className={classes.secureKeyInput}>
           <TextField
             variant="outlined"
             label="Description"
             defaultValue={localDescription}
             onChange={onLocalDescriptionChange}
+            fullWidth
             InputProps={{
               className: classes.textField,
             }}
           />
         </div>
-        <div className={classnames(classes.margin, classes.textField)}>
+        <div className={classes.secureKeyInput}>
           <TextField
             variant="outlined"
             label="Data"
-            type={showData ? 'text' : 'password'}
+            type={'password'}
             value={localData}
             onChange={onLocalDataChange}
+            fullWidth
             InputProps={{
               className: classes.textField,
             }}
           />
         </div>
-        <div className={classnames(classes.margin, classes.keyvalueField)}>
+        <div className={classes.secureKeyInput}>
           <WidgetWrapper
             widgetProperty={{
               label: 'Properties',
@@ -190,7 +180,7 @@ const SecureKeyEditView: React.FC<ISecureKeyEditProps> = ({
         <Button onClick={handleClose} color="primary">
           Cancel
         </Button>
-        <Button onClick={saveSecureKey} color="primary" disabled={!valueIsChanged}>
+        <Button onClick={editSecureKey} color="primary" disabled={!valueIsChanged}>
           Save
         </Button>
       </DialogActions>

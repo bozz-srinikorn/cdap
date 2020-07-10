@@ -100,7 +100,6 @@ const SecureKeyListView: React.FC<ISecureKeyListProps> = ({ classes, state, disp
             <TableRow>
               <TableCell>Key</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Data</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -119,7 +118,6 @@ const SecureKeyListView: React.FC<ISecureKeyListProps> = ({ classes, state, disp
                   <TableCell className={classes.descriptionCell}>
                     {keyMetadata.get('description')}
                   </TableCell>
-                  <TableCell className={classes.dataCell}>{keyMetadata.get('data')}</TableCell>
                   <TableCell className={classes.actionButtonsCell}>
                     <SecureKeyActionButtons
                       state={state}

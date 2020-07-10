@@ -14,13 +14,8 @@
  * the License.
  */
 
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import { MySecureKeyApi } from 'api/securekey';
-import If from 'components/If';
+import ConfirmationModal from 'components/ConfirmationModal';
 import { SecureKeyStatus } from 'components/SecureKeys';
 import React from 'react';
 import { getCurrentNamespace } from 'services/NamespaceStore';
@@ -57,22 +52,14 @@ const SecureKeyDelete: React.FC<ISecureKeyDeleteProps> = ({
   };
 
   return (
-    <If condition={open}>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Delete secure key</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete your secure key from your CDAP Account?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={deleteSecureKey} color="primary">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </If>
+    <ConfirmationModal
+      headerTitle={'Delete secure key'}
+      confirmationElem={'Are you sure you want to delete your secure key from your CDAP Account?'}
+      confirmButtonText={'Cancel'}
+      confirmFn={deleteSecureKey}
+      cancelFn={handleClose}
+      isOpen={open}
+    />
   );
 };
 

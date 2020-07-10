@@ -14,5 +14,5 @@
  * the License.
  */
 
-const COMMON_DELIMITER = ',';
-const COMMON_KV_DELIMITER = ';';
+export const COMMON_DELIMITER = ',';
+export const COMMON_KV_DELIMITER = ';';

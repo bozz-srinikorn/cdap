@@ -25,9 +25,7 @@ import SecureKeyList from 'components/SecureKeys/SecureKeyList';
 import { fromJS, List } from 'immutable';
 import * as React from 'react';
 import { BehaviorSubject } from 'rxjs';
-import { forkJoin } from 'rxjs/observable/forkJoin';
-import { distinctUntilChanged, flatMap, mergeMap } from 'rxjs/operators';
-import { map } from 'rxjs/operators/map';
+import { distinctUntilChanged, flatMap } from 'rxjs/operators';
 import { getCurrentNamespace } from 'services/NamespaceStore';
 
 interface ISecureKeyState {
@@ -112,21 +110,8 @@ const SecureKeysView: React.FC<ISecureKeysProps> = ({ classes }) => {
     const secureKeys$ = secureKeyStatus$
       .pipe(
         distinctUntilChanged(),
-        flatMap((status) => {
-          return MySecureKeyApi.list({ namespace }).pipe(
-            mergeMap((keys: ISecureKeyState[]) => {
-              return forkJoin(
-                keys.map((k) =>
-                  MySecureKeyApi.getSecureData({ namespace, key: k.name }).pipe(
-                    map((data: string) => {
-                      k.data = data;
-                      return k;
-                    })
-                  )
-                )
-              );
-            })
-          );
+        flatMap(() => {
+          return MySecureKeyApi.list({ namespace });
         })
       )
       .publishReplay(1)

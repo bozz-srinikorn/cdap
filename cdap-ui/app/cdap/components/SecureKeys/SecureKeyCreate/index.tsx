@@ -22,7 +22,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import withStyles, { StyleRules, WithStyles } from '@material-ui/core/styles/withStyles';
 import TextField from '@material-ui/core/TextField';
 import { MySecureKeyApi } from 'api/securekey';
-import classnames from 'classnames';
 import WidgetWrapper from 'components/ConfigurationGroup/WidgetWrapper';
 import { SecureKeyStatus } from 'components/SecureKeys';
 import { COMMON_DELIMITER, COMMON_KV_DELIMITER } from 'components/SecureKeys/constants';
@@ -32,14 +31,8 @@ import { getCurrentNamespace } from 'services/NamespaceStore';
 
 const styles = (theme): StyleRules => {
   return {
-    margin: {
+    secureKeyInput: {
       margin: `${theme.Spacing(3)}px ${theme.spacing(1)}px`,
-    },
-    textField: {
-      width: '45ch',
-    },
-    keyvalueField: {
-      width: '60ch',
     },
   };
 };
@@ -65,8 +58,6 @@ const SecureKeyCreateView: React.FC<ISecureKeyCreateProps> = ({
   const [localData, setLocalData] = React.useState('');
   // 'properties' are in key-value form, keep a state in string form
   const [localPropertiesInString, setLocalPropertiesInString] = React.useState('');
-
-  const [showData, setShowData] = React.useState(false);
 
   const onLocalNameChange = (e) => {
     setLocalName(e.target.value);
@@ -132,41 +123,44 @@ const SecureKeyCreateView: React.FC<ISecureKeyCreateProps> = ({
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Create secure key</DialogTitle>
       <DialogContent>
-        <div className={classnames(classes.margin, classes.textField)}>
+        <div className={classes.secureKeyInput}>
           <TextField
             variant="outlined"
             label="Name"
             defaultValue={localName}
             onChange={onLocalNameChange}
+            fullWidth
             InputProps={{
               className: classes.textField,
             }}
           />
         </div>
-        <div className={classnames(classes.margin, classes.textField)}>
+        <div className={classes.secureKeyInput}>
           <TextField
             variant="outlined"
             label="Description"
             defaultValue={localDescription}
             onChange={onLocalDescriptionChange}
+            fullWidth
             InputProps={{
               className: classes.textField,
             }}
           />
         </div>
-        <div className={classnames(classes.margin, classes.textField)}>
+        <div className={classes.secureKeyInput}>
           <TextField
             variant="outlined"
             label="Data"
-            type={showData ? 'text' : 'password'}
+            type="password"
             value={localData}
             onChange={onLocalDataChange}
+            fullWidth
             InputProps={{
               className: classes.textField,
             }}
           />
         </div>
-        <div className={classnames(classes.margin, classes.keyvalueField)}>
+        <div className={classes.secureKeyInput}>
           <WidgetWrapper
             widgetProperty={{
               label: 'Properties',
