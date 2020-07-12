@@ -35,7 +35,7 @@ type ISimpleType =
   | 'timestamp';
 type ILogicalTypeNames = 'timestamp-micros' | 'date' | 'time-micros' | 'decimal';
 
-type IDisplayType = 'schema' | ISimpleType | IComplexTypeNames;
+type IDisplayType = ISimpleType | IComplexTypeNames;
 
 type ISimpleTypeNullable = Array<ISimpleType | 'null'>;
 
@@ -65,6 +65,8 @@ interface IFieldBaseType {
 interface IEnumFieldBase {
   type: 'enum';
   symbols: string[];
+  doc?: string;
+  aliases?: string[];
 }
 interface IEnumField extends IFieldBaseType {
   type: IEnumFieldBase;
@@ -116,15 +118,21 @@ interface ILogicalTypeFieldNullable extends IFieldBaseType {
 
 interface IFieldType extends IFieldBaseType {
   type: ISimpleType | IComplexType | ILogicalType;
+  doc?: string;
+  aliases?: string[];
 }
 
 interface IFieldTypeNullable extends IFieldBaseType {
   type: ISimpleTypeNullable | IComplexTypeNullable | ILogicalTypeNullable;
+  doc?: string;
+  aliases?: string[];
 }
 
 interface IRecordField extends IFieldBaseType {
   type: 'record';
   fields: Array<IFieldType | IFieldTypeNullable>;
+  doc?: string;
+  aliases?: string[];
 }
 type IRecordFieldNullable = Array<IRecordField | 'null'>;
 

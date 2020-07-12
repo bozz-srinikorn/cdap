@@ -34,40 +34,41 @@ import {
   defaultMapType,
   defaultRecordType,
   defaultUnionType,
+  InternalTypesEnum,
 } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import isEmpty from 'lodash/isEmpty';
 
 function getInternalType(tree: INode) {
   const hasChildren = tree.children ? Object.keys(tree.children).length : 0;
-  if (tree.internalType === 'record-field-simple-type' && hasChildren) {
-    return 'record-field-complex-type-root';
+  if (tree.internalType === InternalTypesEnum.RECORD_SIMPLE_TYPE && hasChildren) {
+    return InternalTypesEnum.RECORD_COMPLEX_TYPE_ROOT;
   }
-  if (tree.internalType === 'record-field-complex-type-root' && !hasChildren) {
-    return 'record-field-simple-type';
+  if (tree.internalType === InternalTypesEnum.RECORD_COMPLEX_TYPE_ROOT && !hasChildren) {
+    return InternalTypesEnum.RECORD_SIMPLE_TYPE;
   }
-  if (tree.internalType === 'union-simple-type' && hasChildren) {
-    return 'union-complex-type-root';
+  if (tree.internalType === InternalTypesEnum.UNION_SIMPLE_TYPE && hasChildren) {
+    return InternalTypesEnum.UNION_COMPLEX_TYPE_ROOT;
   }
-  if (tree.internalType === 'union-complex-type-root' && !hasChildren) {
-    return 'union-simple-type';
+  if (tree.internalType === InternalTypesEnum.UNION_COMPLEX_TYPE_ROOT && !hasChildren) {
+    return InternalTypesEnum.UNION_SIMPLE_TYPE;
   }
-  if (tree.internalType === 'array-simple-type' && hasChildren) {
-    return 'array-complex-type-root';
+  if (tree.internalType === InternalTypesEnum.ARRAY_SIMPLE_TYPE && hasChildren) {
+    return InternalTypesEnum.ARRAY_COMPLEX_TYPE_ROOT;
   }
-  if (tree.internalType === 'array-complex-type-root' && !hasChildren) {
-    return 'array-simple-type';
+  if (tree.internalType === InternalTypesEnum.ARRAY_COMPLEX_TYPE_ROOT && !hasChildren) {
+    return InternalTypesEnum.ARRAY_SIMPLE_TYPE;
   }
-  if (tree.internalType === 'map-keys-simple-type' && hasChildren) {
-    return 'map-keys-complex-type-root';
+  if (tree.internalType === InternalTypesEnum.MAP_KEYS_SIMPLE_TYPE && hasChildren) {
+    return InternalTypesEnum.MAP_KEYS_COMPLEX_TYPE_ROOT;
   }
-  if (tree.internalType === 'map-keys-complex-type-root' && hasChildren) {
-    return 'map-keys-simple-type';
+  if (tree.internalType === InternalTypesEnum.MAP_KEYS_COMPLEX_TYPE_ROOT && hasChildren) {
+    return InternalTypesEnum.MAP_KEYS_SIMPLE_TYPE;
   }
-  if (tree.internalType === 'map-values-simple-type' && hasChildren) {
-    return 'map-values-complex-type-root';
+  if (tree.internalType === InternalTypesEnum.MAP_VALUES_SIMPLE_TYPE && hasChildren) {
+    return InternalTypesEnum.MAP_VALUES_COMPLEX_TYPE_ROOT;
   }
-  if (tree.internalType === 'map-values-complex-type-root' && hasChildren) {
-    return 'map-values-simple-type';
+  if (tree.internalType === InternalTypesEnum.MAP_VALUES_COMPLEX_TYPE_ROOT && hasChildren) {
+    return InternalTypesEnum.MAP_VALUES_SIMPLE_TYPE;
   }
   return tree.internalType;
 }

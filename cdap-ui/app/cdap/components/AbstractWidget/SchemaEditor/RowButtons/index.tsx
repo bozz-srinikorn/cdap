@@ -17,11 +17,13 @@
 import * as React from 'react';
 import withStyles from '@material-ui/core/styles/withStyles';
 import Box from '@material-ui/core/Box';
-import { Nullable } from 'components/AbstractWidget/SchemaEditor/RowButtons/Nullable';
-import AddRowButton from 'components/AbstractWidget/SchemaEditor/RowButtons/AddRowButton';
-import RemoveRowButton from 'components/AbstractWidget/SchemaEditor/RowButtons/RemoveRowButton';
+import { AddRowButton } from 'components/AbstractWidget/SchemaEditor/RowButtons/AddRowButton';
+import { RemoveRowButton } from 'components/AbstractWidget/SchemaEditor/RowButtons/RemoveRowButton';
+import { FieldPropertiesPopoverButton } from 'components/AbstractWidget/SchemaEditor/RowButtons/FieldAttributes/FieldAttributesPopoverButton';
 import If from 'components/If';
-
+import { IComplexTypeNames, ISimpleType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
+import { Nullable } from 'components/AbstractWidget/SchemaEditor/RowButtons/Nullable';
+import { IOnchangeHandler } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 /**
  * Generic row buttons (add, nullable & remove buttons)
  * Based on the availability of handlers for each action each
@@ -31,7 +33,7 @@ const RowButtonWrapper = withStyles(() => {
   return {
     root: {
       display: 'grid',
-      gridTemplateColumns: '24px 24px 24px',
+      gridTemplateColumns: '24px 24px 24px 24px',
       gridTemplateRows: '24px',
     },
   };
@@ -42,19 +44,39 @@ interface IRowButtonsProps {
   onNullable?: (checked: boolean) => void;
   onAdd?: () => void;
   onRemove?: () => void;
+  onChange?: IOnchangeHandler;
+  typeProperties?: Record<string, string>;
+  type?: ISimpleType | IComplexTypeNames;
 }
 
-function RowButtons({ nullable, onNullable, onAdd, onRemove }: IRowButtonsProps) {
+function RowButtons({
+  type,
+  nullable,
+  onNullable,
+  onAdd,
+  onRemove,
+  onChange,
+  typeProperties,
+}: IRowButtonsProps) {
   return (
     <RowButtonWrapper>
       <If condition={typeof onNullable === 'function'} invisible>
-        <Nullable onNullable={onNullable} nullable={nullable} />
+        <Nullable nullable={nullable} onNullable={onNullable} />
       </If>
       <If condition={typeof onAdd === 'function'} invisible>
         <AddRowButton onAdd={onAdd} />
       </If>
       <If condition={typeof onRemove === 'function'} invisible>
         <RemoveRowButton onRemove={onRemove} />
+      </If>
+      <If condition={type === 'record' || type === 'enum' || type === 'decimal'}>
+        <FieldPropertiesPopoverButton
+          nullable={nullable}
+          onNullable={onNullable}
+          type={type}
+          onChange={onChange}
+          typeProperties={typeProperties}
+        />
       </If>
     </RowButtonWrapper>
   );

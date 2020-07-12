@@ -33,6 +33,7 @@ import {
   initTypeProperties,
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManagerUtilities';
 import { isNilOrEmpty } from 'services/helpers';
+import { InternalTypesEnum, OperationTypesEnum } from '../SchemaConstants';
 
 interface ISchemaManagerOptions {
   collapseAll: boolean;
@@ -109,7 +110,7 @@ class SchemaManagerBase implements ISchemaManager {
     tree.children.order = order;
     const newlyAddedField = {
       id,
-      internalType: 'enum-symbol',
+      internalType: InternalTypesEnum.ENUM_SYMBOL,
       typeProperties: {
         symbol: '',
       },
@@ -134,7 +135,7 @@ class SchemaManagerBase implements ISchemaManager {
     tree.children.order = order;
     const newlyAddedField = {
       id,
-      internalType: 'record-field-simple-type',
+      internalType: InternalTypesEnum.RECORD_SIMPLE_TYPE,
       nullable: false,
       type: 'string',
       name: '',
@@ -159,7 +160,7 @@ class SchemaManagerBase implements ISchemaManager {
     tree.children.order = order;
     const newlyAddedField = {
       id,
-      internalType: 'union-simple-type',
+      internalType: InternalTypesEnum.UNION_SIMPLE_TYPE,
       nullable: false,
       type: 'string',
     };
@@ -353,7 +354,14 @@ class SchemaManagerBase implements ISchemaManager {
       return { childrenCount: undefined, tree: undefined, newTree: undefined };
     }
     if (fieldId.ancestors.length === 1 && !isEmpty(tree.children[fieldId.id])) {
-      tree.children[fieldId.id][property] = value;
+      if (property === 'typeProperties' && typeof value === 'object') {
+        tree.children[fieldId.id][property] = {
+          ...tree.children[fieldId.id][property],
+          ...value,
+        };
+      } else {
+        tree.children[fieldId.id][property] = value;
+      }
       let childrenInBranch = 0;
       let newChildTree: INode;
       if (property === 'type') {
@@ -403,14 +411,21 @@ class SchemaManagerBase implements ISchemaManager {
     { property, value }: Partial<IOnChangePayload>
   ): IOnChangeReturnType => {
     const index = this.flatTree.findIndex((f) => f.id === fieldId.id);
-    this.flatTree[index][property] = value;
+    if (property === 'typeProperties' && typeof value === 'object') {
+      this.flatTree[index][property] = {
+        ...this.flatTree[index][property],
+        ...value,
+      };
+    } else {
+      this.flatTree[index][property] = value;
+    }
     const matchingEntry = this.flatTree[index];
     let result: { tree: INode; childrenCount: number; newTree: INode };
     let newFlatSubTree: IFlattenRowType[];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     result = this.updateTree(this.schemaTree, idObj, { property, value });
     this.schemaTree = result.tree;
-    // If user changed a complex type to a simple type or to another comples type we need
+    // If user changed a complex type to a simple type or to another complex type we need
     // to remove the complex type children first
     this.flatTree = [
       ...this.flatTree.slice(0, index),
@@ -529,13 +544,13 @@ class SchemaManagerBase implements ISchemaManager {
       return;
     }
     switch (type) {
-      case 'update':
+      case OperationTypesEnum.UPDATE:
         return this.update(fieldId, { property, value });
-      case 'add':
+      case OperationTypesEnum.ADD:
         return this.add(fieldId);
-      case 'remove':
+      case OperationTypesEnum.REMOVE:
         return this.remove(fieldId);
-      case 'collapse':
+      case OperationTypesEnum.COLLAPSE:
         return this.collapse(fieldId);
     }
   };

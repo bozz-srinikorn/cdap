@@ -21,9 +21,23 @@ import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
-const ArrayTypeBase = ({ type, nullable, onChange, autoFocus }: IFieldTypeBaseProps) => {
+const ArrayTypeBase = ({
+  type,
+  nullable,
+  onChange,
+  autoFocus,
+  typeProperties,
+}: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const [fieldTypeProperties, setFieldTypeProperties] = React.useState(typeProperties || {});
+
+  const onTypePropertiesChangeHandler = (property, value) => {
+    if (property === 'typeProperties') {
+      setFieldTypeProperties(value);
+    }
+    onChange(property, value);
+  };
   const inputEle = React.useRef(null);
   React.useEffect(() => {
     if (autoFocus) {
@@ -49,7 +63,13 @@ const ArrayTypeBase = ({ type, nullable, onChange, autoFocus }: IFieldTypeBasePr
           inputRef={(ref) => (inputEle.current = ref)}
         />
       </SingleColumnWrapper>
-      <RowButtons nullable={fieldNullable} onNullable={type === 'union' ? undefined : onNullable} />
+      <RowButtons
+        nullable={fieldNullable}
+        onNullable={type === 'union' ? undefined : onNullable}
+        type={fieldType}
+        onChange={onTypePropertiesChangeHandler}
+        typeProperties={fieldTypeProperties}
+      />
     </React.Fragment>
   );
 };

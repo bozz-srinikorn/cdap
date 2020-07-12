@@ -22,6 +22,7 @@ import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/Edit
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 import TextboxOnValium from 'components/TextboxOnValium';
 import makeStyles from '@material-ui/core/styles/makeStyles';
+import { ISimpleType, IComplexTypeNames } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 
 const useStyles = makeStyles({
   textbox: {
@@ -37,10 +38,26 @@ const FieldTypeBase = ({
   onAdd,
   onRemove,
   autoFocus,
+  typeProperties,
 }: IFieldTypeBaseProps) => {
+  /**
+   * We use hooks here because we propagte the state only upwards
+   * via onChange. Any intermediate state is stored here.
+   *
+   * For instance when the user sets the precision and scale of a decimal type we
+   * set that in typeProperties here as part of the hooks for immediate feedback
+   * but at the same time propagate the value via onChange to the parent.
+   *
+   * This state is stored as long as the component is not destroyed. on Unmount and
+   * remount (happens as part of the scroll) we get the values from the parent once
+   * on mount. So the values will be the same as it was last propagated.
+   *
+   * This holds the same for all field type (array, enum, map & union).
+   */
   const [fieldName, setFieldName] = React.useState(name);
-  const [fieldType, setFieldType] = React.useState(type);
+  const [fieldType, setFieldType] = React.useState<ISimpleType | IComplexTypeNames>(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const [fieldTypeProperties, setFieldTypeProperties] = React.useState(typeProperties || {});
   const inputEle = React.useRef(null);
   const classes = useStyles();
   React.useEffect(() => {
@@ -71,6 +88,13 @@ const FieldTypeBase = ({
   const inputRef = (ref) => {
     inputEle.current = ref;
   };
+  const onTypePropertiesChangeHandler = (property, value) => {
+    if (property === 'typeProperties') {
+      setFieldTypeProperties(value);
+    }
+    onChange(property, value);
+  };
+
   return (
     <React.Fragment>
       <FieldInputWrapper>
@@ -91,8 +115,11 @@ const FieldTypeBase = ({
       <RowButtons
         nullable={fieldNullable}
         onNullable={type === 'union' ? undefined : onNullable}
+        type={fieldType}
         onAdd={onAdd}
         onRemove={onRemove}
+        onChange={onTypePropertiesChangeHandler}
+        typeProperties={fieldTypeProperties}
       />
     </React.Fragment>
   );

@@ -29,6 +29,7 @@ import {
   getSimpleType,
 } from 'components/AbstractWidget/SchemaEditor/SchemaHelpers';
 import uuidV4 from 'uuid/v4';
+import { InternalTypesEnum } from '../SchemaConstants';
 
 type ITypeProperties = Record<string, any>;
 
@@ -77,7 +78,7 @@ function parseUnionType(type): IOrderedChildren {
       result[id] = {
         id,
         type: typeName,
-        internalType: 'union-complex-type-root',
+        internalType: InternalTypesEnum.UNION_COMPLEX_TYPE_ROOT,
         children: parseComplexType(subType),
       };
     } else {
@@ -85,7 +86,7 @@ function parseUnionType(type): IOrderedChildren {
         id,
         type: subType,
         nullable: false,
-        internalType: 'union-simple-type',
+        internalType: InternalTypesEnum.UNION_SIMPLE_TYPE,
       };
     }
   }
@@ -112,7 +113,7 @@ function parseArrayType(type): IOrderedChildren {
   if (t.items && !isComplexType(t.items)) {
     return {
       [id]: {
-        internalType: 'array-simple-type',
+        internalType: InternalTypesEnum.ARRAY_SIMPLE_TYPE,
         id,
         nullable: isNullable(t.items),
         type: getNonNullableType(t.items),
@@ -121,7 +122,7 @@ function parseArrayType(type): IOrderedChildren {
   }
   return {
     [id]: {
-      internalType: 'array-complex-type-root',
+      internalType: InternalTypesEnum.ARRAY_COMPLEX_TYPE_ROOT,
       id,
       nullable,
       type: getComplexTypeName(t.items),
@@ -166,7 +167,7 @@ function parseEnumType(type): IOrderedChildren {
     result.order.push(id);
     result[id] = {
       id,
-      internalType: 'enum-symbol',
+      internalType: InternalTypesEnum.ENUM_SYMBOL,
       nullable,
       typeProperties: {
         symbol,
@@ -226,12 +227,12 @@ function parseMapType(type): IOrderedChildren {
   const valuesType = t.values;
   const result: Record<string, INode> = {};
   const mapKeysSubType = getMapSubType(keysType, {
-    simpleType: 'map-keys-simple-type',
-    complexType: 'map-keys-complex-type-root',
+    simpleType: InternalTypesEnum.MAP_KEYS_SIMPLE_TYPE,
+    complexType: InternalTypesEnum.MAP_KEYS_COMPLEX_TYPE_ROOT,
   });
   const mapValuesSubType = getMapSubType(valuesType, {
-    simpleType: 'map-values-simple-type',
-    complexType: 'map-values-complex-type-root',
+    simpleType: InternalTypesEnum.MAP_VALUES_SIMPLE_TYPE,
+    complexType: InternalTypesEnum.MAP_VALUES_COMPLEX_TYPE_ROOT,
   });
   result[mapKeysSubType.id] = mapKeysSubType;
   result[mapValuesSubType.id] = mapValuesSubType;
@@ -333,7 +334,12 @@ function checkForLogicalType(field: IFieldType | IFieldTypeNullable) {
         },
       };
     default:
-      return {};
+      return {
+        typeProperties: {
+          doc: field.doc,
+          aliases: field.aliases,
+        },
+      };
   }
 }
 
@@ -350,7 +356,7 @@ function parseSubTree(field: IFieldType | IFieldTypeNullable): INode {
     return {
       name,
       id: uuidV4(),
-      internalType: 'record-field-simple-type',
+      internalType: InternalTypesEnum.RECORD_SIMPLE_TYPE,
       nullable,
       type: getSimpleType(t),
       ...checkForLogicalType(field),
@@ -360,9 +366,13 @@ function parseSubTree(field: IFieldType | IFieldTypeNullable): INode {
     name,
     children: parseComplexType(type),
     id: uuidV4(),
-    internalType: 'record-field-complex-type-root',
+    internalType: InternalTypesEnum.RECORD_COMPLEX_TYPE_ROOT,
     nullable,
     type: getComplexTypeName(t),
+    typeProperties: {
+      doc: t.doc,
+      aliases: t.aliases,
+    },
   };
 }
 

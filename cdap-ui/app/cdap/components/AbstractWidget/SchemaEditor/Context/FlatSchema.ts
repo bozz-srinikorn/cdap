@@ -18,6 +18,7 @@ import isObject from 'lodash/isObject';
 import { INode } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { IFlattenRowType } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { ISchemaManagerOptions } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManager';
+import { InternalTypesEnum } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 
 /**
  * DFS traversal of the schema tree to flatten.
@@ -34,7 +35,8 @@ function FlatSchemaBase(
   }
   const { internalType, name, id, children, type, typeProperties, nullable } = schemaTree;
   const hasChildren = isObject(children) && Object.keys(children).length;
-  const collapsed = hasChildren && internalType !== 'schema' ? options.collapseAll : null;
+  const collapsed =
+    hasChildren && internalType !== InternalTypesEnum.SCHEMA ? options.collapseAll : null;
   result.push({
     internalType,
     name,

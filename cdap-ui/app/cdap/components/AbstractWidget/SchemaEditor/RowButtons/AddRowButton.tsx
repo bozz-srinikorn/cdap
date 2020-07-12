@@ -18,10 +18,12 @@ import * as React from 'react';
 import AddIcon from '@material-ui/icons/Add';
 import { IconWrapper } from 'components/AbstractWidget/SchemaEditor/RowButtons/RemoveRowButton';
 
-export default function AddRowButton({ onAdd }) {
+function AddRowButton({ onAdd }) {
   return (
     <IconWrapper onClick={onAdd}>
       <AddIcon />
     </IconWrapper>
   );
 }
+
+export { AddRowButton };

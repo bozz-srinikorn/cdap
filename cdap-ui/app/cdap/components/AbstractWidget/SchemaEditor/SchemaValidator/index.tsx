@@ -22,6 +22,7 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import { IFlattenRowType } from '../EditorTypes';
+import { isNilOrEmpty } from 'services/helpers';
 
 /**
  * Schema validator is independent of the schema editor. It takes in a schema tree
@@ -108,6 +109,9 @@ class SchemaValidatorProvider extends React.Component {
     const errorObj = this.isSubTreeValidAvroSchema(field, schemaTree);
     if (!errorObj) {
       const { errorMap } = this.state;
+      if (isNilOrEmpty(errorMap)) {
+        return;
+      }
       field.ancestors.forEach((ancestorId) => {
         if (errorMap.hasOwnProperty(ancestorId)) {
           delete errorMap[ancestorId];

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2019 Cask Data, Inc.
+ * Copyright © 2020 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,13 @@ import {
   IFlattenRowType,
   IFieldIdentifier,
   IOnChangePayload,
+  IRowOnChangeHandler,
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
-import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
+import {
+  schemaTypes,
+  InternalTypesEnum,
+  OperationTypesEnum,
+} from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { FieldType } from 'components/AbstractWidget/SchemaEditor/FieldType';
 import { UnionType } from 'components/AbstractWidget/SchemaEditor/UnionType';
 import { MapType } from 'components/AbstractWidget/SchemaEditor/MapType';
@@ -40,7 +45,7 @@ const styles = (theme): StyleRules => {
   return {
     errorIcon: {
       position: 'absolute',
-      right: '0',
+      right: '5px',
       color: theme.palette.red[200],
     },
     erroredRow: {
@@ -64,7 +69,7 @@ interface IFieldRowState {
 
 interface IFieldRowProps extends WithStyles<typeof styles> {
   field: IFlattenRowType;
-  onChange: (id: IFieldIdentifier, payload: IOnChangePayload) => void;
+  onChange: IRowOnChangeHandler;
   autoFocus?: boolean;
 }
 
@@ -102,7 +107,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
         {
           property,
           value,
-          type: 'update',
+          type: OperationTypesEnum.UPDATE,
         }
       );
     }
@@ -116,7 +121,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
       this.props.onChange(
         { id, ancestors },
         {
-          type: 'add',
+          type: OperationTypesEnum.ADD,
         }
       );
     }
@@ -126,7 +131,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
     const { onChange, field } = this.props;
     const { id, ancestors } = field;
     if (onChange) {
-      onChange({ id, ancestors }, { type: 'remove' });
+      onChange({ id, ancestors }, { type: OperationTypesEnum.REMOVE });
     }
   };
 
@@ -134,14 +139,14 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
     const { onChange, field } = this.props;
     const { id, ancestors } = field;
     if (onChange) {
-      onChange({ id, ancestors }, { type: 'collapse' });
+      onChange({ id, ancestors }, { type: OperationTypesEnum.COLLAPSE });
     }
   };
 
   public RenderSubType = (field) => {
     switch (field.internalType) {
-      case 'record-field-simple-type':
-      case 'record-field-complex-type-root':
+      case InternalTypesEnum.RECORD_SIMPLE_TYPE:
+      case InternalTypesEnum.RECORD_COMPLEX_TYPE_ROOT:
         return (
           <FieldType
             name={this.props.field.name}
@@ -151,11 +156,12 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
             onAdd={this.onAdd}
             onRemove={this.onRemove}
             autoFocus={this.props.autoFocus}
+            typeProperties={this.props.field.typeProperties}
           />
         );
-      case 'array-simple-type':
-      case 'array-complex-type':
-      case 'array-complex-type-root':
+      case InternalTypesEnum.ARRAY_SIMPLE_TYPE:
+      case InternalTypesEnum.ARRAY_COMPLEX_TYPE:
+      case InternalTypesEnum.ARRAY_COMPLEX_TYPE_ROOT:
         return (
           <ArrayType
             type={this.props.field.type}
@@ -164,9 +170,10 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
             onAdd={this.onAdd}
             onRemove={this.onRemove}
             autoFocus={this.props.autoFocus}
+            typeProperties={this.props.field.typeProperties}
           />
         );
-      case 'enum-symbol':
+      case InternalTypesEnum.ENUM_SYMBOL:
         return (
           <EnumType
             typeProperties={this.props.field.typeProperties}
@@ -176,10 +183,10 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
             autoFocus={this.props.autoFocus}
           />
         );
-      case 'map-keys-complex-type-root':
-      case 'map-keys-simple-type':
-      case 'map-values-complex-type-root':
-      case 'map-values-simple-type':
+      case InternalTypesEnum.MAP_KEYS_COMPLEX_TYPE_ROOT:
+      case InternalTypesEnum.MAP_KEYS_SIMPLE_TYPE:
+      case InternalTypesEnum.MAP_VALUES_COMPLEX_TYPE_ROOT:
+      case InternalTypesEnum.MAP_VALUES_SIMPLE_TYPE:
         return (
           <MapType
             internalType={this.props.field.internalType}
@@ -189,10 +196,11 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
             onAdd={this.onAdd}
             onRemove={this.onRemove}
             autoFocus={this.props.autoFocus}
+            typeProperties={this.props.field.typeProperties}
           />
         );
-      case 'union-simple-type':
-      case 'union-complex-type-root':
+      case InternalTypesEnum.UNION_SIMPLE_TYPE:
+      case InternalTypesEnum.UNION_COMPLEX_TYPE_ROOT:
         return (
           <UnionType
             type={this.props.field.type}
@@ -201,6 +209,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
             onAdd={this.onAdd}
             onRemove={this.onRemove}
             autoFocus={this.props.autoFocus}
+            typeProperties={this.props.field.typeProperties}
           />
         );
       default:
@@ -211,7 +220,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
   public render() {
     const { classes } = this.props;
     const { ancestors, internalType } = this.props.field;
-    if (internalType === 'schema') {
+    if (internalType === InternalTypesEnum.SCHEMA) {
       return null;
     }
     return (
@@ -224,7 +233,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
               className={classnames({
                 [classes.erroredRow]: hasError,
               })}
-              collapsable={typeof this.props.field.collapsed === 'boolean'}
             >
               <React.Fragment>
                 <If condition={hasError}>
@@ -236,7 +244,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
                     <ErrorIcon className={classes.errorIcon} />
                   </Tooltip>
                 </If>
-                <If condition={typeof this.props.field.collapsed === 'boolean'}>
+                <If condition={typeof this.props.field.collapsed === 'boolean'} invisible>
                   <If condition={this.props.field.collapsed}>
                     <KeyboardArrowRightIcon onClick={this.onToggleCollapse} />
                   </If>

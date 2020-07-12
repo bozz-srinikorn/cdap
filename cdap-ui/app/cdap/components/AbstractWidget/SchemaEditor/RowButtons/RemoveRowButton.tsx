@@ -46,4 +46,4 @@ function RemoveRowButtonBase({ classes, onRemove }) {
   );
 }
 const RemoveRowButton = withStyles(styles)(RemoveRowButtonBase);
-export default RemoveRowButton;
+export { RemoveRowButton };

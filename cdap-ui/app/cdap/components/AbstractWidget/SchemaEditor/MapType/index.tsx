@@ -16,7 +16,10 @@
 
 import * as React from 'react';
 import Select from 'components/AbstractWidget/FormInputs/Select';
-import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
+import {
+  schemaTypes,
+  InternalTypesEnum,
+} from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import Box from '@material-ui/core/Box';
 import withStyles, { StyleRules } from '@material-ui/core/styles/withStyles';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
@@ -41,16 +44,33 @@ const MapTypeBase = ({
   nullable,
   onChange,
   autoFocus,
+  typeProperties,
 }: IFieldTypeBaseProps) => {
   let label = '';
-  if (['map-keys-complex-type-root', 'map-keys-simple-type'].indexOf(internalType) !== -1) {
+  const keysType: string[] = [
+    InternalTypesEnum.MAP_KEYS_COMPLEX_TYPE_ROOT,
+    InternalTypesEnum.MAP_KEYS_SIMPLE_TYPE,
+  ];
+  const valuesType: string[] = [
+    InternalTypesEnum.MAP_VALUES_COMPLEX_TYPE_ROOT,
+    InternalTypesEnum.MAP_VALUES_SIMPLE_TYPE,
+  ];
+  if (keysType.indexOf(internalType) !== -1) {
     label = 'Keys: ';
   }
-  if (['map-values-complex-type-root', 'map-values-simple-type'].indexOf(internalType) !== -1) {
+  if (valuesType.indexOf(internalType) !== -1) {
     label = 'Values: ';
   }
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const [fieldTypeProperties, setFieldTypeProperties] = React.useState(typeProperties || {});
+
+  const onTypePropertiesChangeHandler = (property, value) => {
+    if (property === 'typeProperties') {
+      setFieldTypeProperties(value);
+    }
+    onChange(property, value);
+  };
   const inputEle = React.useRef(null);
   React.useEffect(() => {
     if (autoFocus) {
@@ -77,7 +97,13 @@ const MapTypeBase = ({
           inputRef={(ref) => (inputEle.current = ref)}
         />
       </MapWrapper>
-      <RowButtons nullable={fieldNullable} onNullable={type === 'union' ? undefined : onNullable} />
+      <RowButtons
+        nullable={fieldNullable}
+        onNullable={type === 'union' ? undefined : onNullable}
+        type={fieldType}
+        onChange={onTypePropertiesChangeHandler}
+        typeProperties={fieldTypeProperties}
+      />
     </React.Fragment>
   );
 };

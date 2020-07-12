@@ -13,6 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+import { ISchemaType } from './SchemaTypes';
+
 /**
  * Defines all the defaults we use for the schema.
  */
@@ -77,7 +80,6 @@ const schemaTypes = [
   'int',
   'long',
   'map',
-  'number',
   'record',
   'string',
   'union',
@@ -91,6 +93,40 @@ const logicalTypeToSimpleTypeMap = {
 };
 
 const INDENTATION_SPACING = 15;
+
+const getDefaultEmptyAvroSchema = (): ISchemaType => {
+  return {
+    name: 'etlSchemaBody',
+    schema: {
+      name: 'etlSchemaBody',
+      type: 'record',
+      fields: [],
+    },
+  };
+};
+
+enum InternalTypesEnum {
+  SCHEMA = 'schema',
+  RECORD_SIMPLE_TYPE = 'record-field-simple-type',
+  RECORD_COMPLEX_TYPE_ROOT = 'record-field-complex-type-root',
+  ARRAY_SIMPLE_TYPE = 'array-simple-type',
+  ARRAY_COMPLEX_TYPE = 'array-complex-type',
+  ARRAY_COMPLEX_TYPE_ROOT = 'array-complex-type-root',
+  ENUM_SYMBOL = 'enum-symbol',
+  MAP_KEYS_COMPLEX_TYPE_ROOT = 'map-keys-complex-type-root',
+  MAP_KEYS_SIMPLE_TYPE = 'map-keys-simple-type',
+  MAP_VALUES_COMPLEX_TYPE_ROOT = 'map-values-complex-type-root',
+  MAP_VALUES_SIMPLE_TYPE = 'map-values-simple-type',
+  UNION_SIMPLE_TYPE = 'union-simple-type',
+  UNION_COMPLEX_TYPE_ROOT = 'union-complex-type-root',
+}
+
+enum OperationTypesEnum {
+  UPDATE = 'update',
+  ADD = 'add',
+  REMOVE = 'remove',
+  COLLAPSE = 'collapse',
+}
 
 export {
   schemaTypes,
@@ -109,4 +145,7 @@ export {
   defaultRecordType,
   defaultUnionType,
   defaultFieldType,
+  getDefaultEmptyAvroSchema,
+  InternalTypesEnum,
+  OperationTypesEnum,
 };

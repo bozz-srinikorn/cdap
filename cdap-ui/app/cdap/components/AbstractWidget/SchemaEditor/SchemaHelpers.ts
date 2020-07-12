@@ -109,6 +109,32 @@ const isComplexType = (complexType) => {
       return isUnion(complexType) ? true : false;
   }
 };
+
+const isDisplayTypeLogical = ({ type }) => {
+  switch (type) {
+    case 'decimal':
+    case 'date':
+    case 'time':
+    case 'timestamp':
+      return true;
+    default:
+      return false;
+  }
+};
+
+const isDisplayTypeComplex = ({ type }) => {
+  switch (type) {
+    case 'record':
+    case 'enum':
+    case 'union':
+    case 'map':
+    case 'array':
+      return true;
+    default:
+      return isDisplayTypeLogical({ type }) || false;
+  }
+};
+
 /**
  * Utility function to get the complex type names.
  * @param complexType any valid complex avro type.
@@ -133,6 +159,23 @@ const getComplexTypeName = (complexType): IComplexTypeNames => {
   }
 };
 
+const isFlatRowTypeComplex = (typeName: ISimpleType | IComplexTypeNames) => {
+  switch (typeName) {
+    case 'string':
+    case 'boolean':
+    case 'bytes':
+    case 'double':
+    case 'float':
+    case 'int':
+    case 'long':
+    case 'number':
+    case 'string':
+      return false;
+    default:
+      return true;
+  }
+};
+
 export {
   isNullable,
   isUnion,
@@ -141,4 +184,7 @@ export {
   getComplexTypeName,
   displayTypes,
   getSimpleType,
+  isFlatRowTypeComplex,
+  isDisplayTypeLogical,
+  isDisplayTypeComplex,
 };

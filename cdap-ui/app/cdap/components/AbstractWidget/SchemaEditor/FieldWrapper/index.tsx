@@ -35,13 +35,12 @@ interface IFieldWrapperProps {
   children?: React.ReactNode;
   style?: any;
   className?: any;
-  collapsable?: boolean;
 }
 
 const CustomizedPaper = withStyles(() => {
   return {
     root: {
-      padding: '2px 10px',
+      padding: '2px 10px 2px 0px',
       display: 'grid',
       marginTop: `${rowMarginTop}px`,
       gridTemplateRows: `${rowHeight}px`,
@@ -65,7 +64,6 @@ const FieldWrapperBase = ({
   children,
   style = {},
   className,
-  collapsable,
 }: IFieldWrapperProps) => {
   /**
    * Based on the number of ancestors we indent the row accordingly. Each ancestor will
@@ -80,21 +78,16 @@ const FieldWrapperBase = ({
    * The width of the wrapper is reduced based on the indentation.
    */
   const spacing = ancestors.length * INDENTATION_SPACING;
-  const firstColumn = `calc(100% - 75px)`;
-  const secondColumn = `75px`;
+  const firstColumn = '20px';
+  const thirdColumn = `96px`;
+  const errorColumn = '10px';
+  const secondColumn = `calc(100% - (${firstColumn} + ${thirdColumn} + ${errorColumn}))`;
   let customStyles: Partial<CSSStyleDeclaration> = {
     marginLeft: `${spacing}px`,
-    gridTemplateColumns: `${firstColumn} ${secondColumn}`,
+    gridTemplateColumns: `${firstColumn} ${secondColumn} ${thirdColumn}`,
     width: `calc(100% - ${spacing + 5 /* box shadow */}px)`,
     alignItems: 'center',
   };
-  if (collapsable) {
-    const firstcol = '20px'; // for arrow placement for nested tree.
-    const secondcol = `calc(100% - (75px + 20px))`;
-    const thirdcol = '75px';
-    customStyles.paddingLeft = '0px';
-    customStyles.gridTemplateColumns = `${firstcol} ${secondcol} ${thirdcol}`;
-  }
   if (style && isObject(style)) {
     customStyles = {
       ...customStyles,

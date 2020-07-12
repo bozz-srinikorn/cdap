@@ -1,5 +1,5 @@
 /*
- * Copyright © 2019 Cask Data, Inc.
+ * Copyright © 2020 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@
  * Contains types used only by the editor for presentation.
  */
 import { ISimpleType, IComplexTypeNames } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
+import { ITypeProperties } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
+import { OperationTypesEnum } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 
 type IInternalFieldType =
   | 'schema'
@@ -47,11 +49,11 @@ type IInternalFieldType =
 interface IFlattenRowType {
   id: string;
   name?: string;
-  type?: 'schema' | ISimpleType | IComplexTypeNames;
+  type?: ISimpleType | IComplexTypeNames;
   internalType: IInternalFieldType;
   nullable?: boolean;
   ancestors: string[];
-  typeProperties?: Record<string, any>;
+  typeProperties?: ITypeProperties;
   collapsed?: boolean;
   hidden?: boolean;
 }
@@ -60,14 +62,15 @@ interface IFieldIdentifier {
   id: string;
   ancestors: string[];
 }
-
+type IOnchangeHandler = (property: string, value?: string | boolean | ITypeProperties) => void;
+type IRowOnChangeHandler = (id: IFieldIdentifier, payload: IOnChangePayload) => void;
 interface IFieldTypeBaseProps {
   name?: string;
-  type?: string;
+  type?: ISimpleType | IComplexTypeNames;
   nullable?: boolean;
   internalType?: IInternalFieldType;
-  typeProperties?: Record<string, any>;
-  onChange: (property: string, value?: string | boolean | Record<string, string>) => void;
+  typeProperties?: ITypeProperties;
+  onChange: IOnchangeHandler;
   onAdd: () => void;
   onRemove: () => void;
   autoFocus?: boolean;
@@ -75,8 +78,18 @@ interface IFieldTypeBaseProps {
 
 interface IOnChangePayload {
   property?: string;
-  value?: string;
-  type: 'update' | 'add' | 'remove' | 'collapse';
+  value?: string | ITypeProperties;
+  type:
+    | OperationTypesEnum.UPDATE
+    | OperationTypesEnum.ADD
+    | OperationTypesEnum.REMOVE
+    | OperationTypesEnum.COLLAPSE;
+}
+
+interface IAttributesComponentProps {
+  onChange?: IOnchangeHandler;
+  typeProperties: ITypeProperties;
+  handleClose: () => void;
 }
 
 export {
@@ -85,4 +98,7 @@ export {
   IFieldIdentifier,
   IFieldTypeBaseProps,
   IOnChangePayload,
+  IAttributesComponentProps,
+  IOnchangeHandler,
+  IRowOnChangeHandler,
 };

@@ -34,6 +34,7 @@ import {
   SchemaValidatorConsumer,
   SchemaValidatorProvider,
 } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
+import { dumbestClone as cloneDeep } from 'services/helpers';
 
 const styles = (): StyleRules => {
   return {
@@ -58,38 +59,31 @@ interface ISchemaEditorState {
   flat: IFlattenRowType[];
 }
 
-class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorState> {
+class SchemaEditorBase extends React.Component<ISchemaEditorProps, ISchemaEditorState> {
   private schema: ISchemaManager = null;
   constructor(props) {
     super(props);
     const { options } = props;
     this.schema = SchemaManager(this.props.schema, options).getInstance();
     this.state = {
-      flat: this.schema.getFlatSchema(),
-      tree: this.schema.getSchemaTree(),
+      flat: cloneDeep(this.schema.getFlatSchema()),
+      tree: cloneDeep(this.schema.getSchemaTree()),
     };
   }
 
   public componentWillReceiveProps(nextProps) {
     this.schema = SchemaManager(nextProps.schema).getInstance();
     this.setState({
-      flat: this.schema.getFlatSchema(),
-      tree: this.schema.getSchemaTree(),
+      flat: cloneDeep(this.schema.getFlatSchema()),
+      tree: cloneDeep(this.schema.getSchemaTree()),
     });
   }
   public onChange = (validate, fieldId: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
     const { fieldIdToFocus } = this.schema.onChange(fieldId, onChangePayload);
-    const newFlat = this.schema
-      .getFlatSchema()
-      .map((row) => row.id)
-      .join('##');
-    const oldFlat = this.state.flat.map((row) => row.id).join('##');
-    if (oldFlat !== newFlat) {
-      this.setState({
-        flat: this.schema.getFlatSchema(),
-        tree: this.schema.getSchemaTree(),
-      });
-    }
+    this.setState({
+      flat: [...this.schema.getFlatSchema()],
+      tree: { ...this.schema.getSchemaTree() },
+    });
     this.props.onChange({
       tree: this.schema.getSchemaTree(),
       flat: this.schema.getFlatSchema(),
@@ -119,11 +113,13 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
   }
 }
 
-const StyledDemo = withStyles(styles)(SchemaEditor);
-export default function SchemaEditorWrapper(props) {
+const StyledDemo = withStyles(styles)(SchemaEditorBase);
+function SchemaEditor(props) {
   return (
     <ThemeWrapper>
       <StyledDemo {...props} />
     </ThemeWrapper>
   );
 }
+
+export { SchemaEditor };

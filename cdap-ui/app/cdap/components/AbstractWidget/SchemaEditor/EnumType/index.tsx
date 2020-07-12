@@ -37,6 +37,14 @@ const EnumTypeBase = ({
   const [enumSymbol, setEnumSymbol] = React.useState(symbol);
   const inputEle = React.useRef(null);
   const classes = useStyles();
+  const [fieldTypeProperties, setFieldTypeProperties] = React.useState(typeProperties || {});
+
+  const onTypePropertiesChangeHandler = (property, value) => {
+    if (property === 'typeProperties') {
+      setFieldTypeProperties(value);
+    }
+    onChange(property, value);
+  };
   const onChangeHandler = (newValue, _, keyPressKeyCode) => {
     if (keyPressKeyCode === 13) {
       onAdd();
@@ -65,7 +73,12 @@ const EnumTypeBase = ({
         onKeyUp={() => ({})}
         className={classes.textbox}
       />
-      <RowButtons onRemove={onRemove} onAdd={onAdd} />
+      <RowButtons
+        onRemove={onRemove}
+        onAdd={onAdd}
+        typeProperties={fieldTypeProperties}
+        onChange={onTypePropertiesChangeHandler}
+      />
     </React.Fragment>
   );
 };
